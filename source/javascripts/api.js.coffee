@@ -165,9 +165,9 @@ window.InfluxDB = class InfluxDB
   getInterfaces: () ->
     @get @path("interfaces")
 
-  readPoint: (fieldNames, seriesNames, callback) ->
+  readPoint: (fieldNames, seriesNames, callback, callback_err) ->
     query = "SELECT #{fieldNames} FROM #{seriesNames};"
-    @get @path("db/#{@database}/series", {q: query}), callback
+    @get @path("db/#{@database}/series", {q: query}), callback, callback_err
 
   _readPoint: (query, callback) ->
     @get @path("db/#{@database}/series", {q: query}), callback
@@ -175,7 +175,7 @@ window.InfluxDB = class InfluxDB
   query: (query, callback) ->
     @get @path("db/#{@database}/series", {q: query}), callback
 
-  get: (path, callback) ->
+  get: (path, callback, callback_err) ->
     new Promise (resolve, reject) =>
       @retry resolve, reject, () =>
         reqwest(
@@ -186,6 +186,7 @@ window.InfluxDB = class InfluxDB
           success: (data) =>
             resolve(data)
             callback @formatPoints(data) if callback
+          error: callback_err
         )
 
   post: (path, data, callback) ->
